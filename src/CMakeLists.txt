@@ -19,10 +19,12 @@ list(APPEND SRC_FILES
     Game.cpp
     GameState.cpp
     Move.cpp
+    System.cpp
 )
 
 add_executable(${CMAKE_PROJECT_NAME} main.cpp ${SRC_FILES})
 target_compile_features(${CMAKE_PROJECT_NAME} PRIVATE cxx_std_20)
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall -Wpedantic -Werror)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(
@@ -30,4 +32,5 @@ target_link_libraries(
     sfml-system
     sfml-window
     sfml-graphics
+    pthread
 )

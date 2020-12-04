@@ -137,7 +137,6 @@ void BoardView::update(const Board& board)
     }
 }
 
-
 void BoardView::drawMoves(std::span<const Move> moves)
 {
     resetTiles(tiles_, size_);

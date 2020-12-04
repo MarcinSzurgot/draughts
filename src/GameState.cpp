@@ -67,16 +67,22 @@ std::span<const Move> GameState::moves(sf::Vector2i position) const
 
 Exchange GameState::move(const Move& move)
 {
+    const auto exchange = Exchange{
+        move,
+        move.jump ? *board_[*move.jump] : Tile(),
+        *board_[move.from]
+    };
+
     currentPlayer_ = toggled(currentPlayer_);
-    board_[move.to] = pieceAfterMove(*board_[move.from], move.to, board_.size());
+
+    board_[move.to] = pieceAfterMove(exchange.movedPiece, move.to, board_.size());
     board_[move.from] = Tile();
     if (move.jump)
     {
-        const auto jumpedPiece = board_[*move.jump];
         board_[*move.jump] = Tile();
-        return {move, jumpedPiece, *board_[move.to]};
     }
-    return {move, Tile(), *board_[move.to]};
+
+    return exchange;
 }
 
 void GameState::undo(const Exchange& exchange)

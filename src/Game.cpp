@@ -1,5 +1,8 @@
 #include "Game.hpp"
 
+#include <chrono>
+#include <thread>
+
 #include "BoardBuilder.hpp"
 
 Game::Game(sf::Vector2f viewSize)
@@ -58,6 +61,7 @@ void Game::update(sf::Vector2i tileClicked)
 
 void Game::update(sf::Vector2f mouseClickPosition, bool undo)
 {
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
     if (undo && not empty(lastMoves_))
     {
         gameState_.undo(lastMoves_.back());
