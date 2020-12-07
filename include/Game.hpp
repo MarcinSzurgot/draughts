@@ -28,6 +28,8 @@ struct Game
 
     const sf::Drawable& drawable() const;
 
+    const BoardView& boardView() const;
+
 private:
     void drawAvailableMoves();
 

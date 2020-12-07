@@ -19,6 +19,7 @@ list(APPEND SRC_FILES
     Game.cpp
     GameState.cpp
     Move.cpp
+    RandomCpuPlayer.cpp
     System.cpp
 )
 

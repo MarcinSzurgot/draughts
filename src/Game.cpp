@@ -61,7 +61,6 @@ void Game::update(sf::Vector2i tileClicked)
 
 void Game::update(sf::Vector2f mouseClickPosition, bool undo)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
     if (undo && not empty(lastMoves_))
     {
         gameState_.undo(lastMoves_.back());
@@ -99,6 +98,11 @@ bool Game::isOver() const
 }
 
 const sf::Drawable& Game::drawable() const
+{
+    return boardView_;
+}
+
+const BoardView& Game::boardView() const
 {
     return boardView_;
 }
