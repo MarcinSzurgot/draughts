@@ -1,30 +1,67 @@
 #include "System.hpp"
 
+#include <memory>
+
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
 #include "Game.hpp"
+#include "HumanPlayer.hpp"
 #include "RandomCpuPlayer.hpp"
+#include "SwitchException.hpp"
 
 namespace
 {
-    enum Player { cpu, human };
 
-    std::unique_ptr<sf::RenderWindow> window()
+enum PlayerType { cpu, human };
+
+std::unique_ptr<sf::RenderWindow> window()
+{
+    const auto windowName = "draughts";
+    const auto videoMode  = sf::VideoMode(600, 600);
+    const auto framerate  = 60;
+
+    auto window = std::make_unique<sf::RenderWindow>(videoMode, windowName);
+    window->setFramerateLimit(framerate);
+    return window;
+}
+
+Game game()
+{
+    return Game({600.f, 600.f});
+}
+
+PlayerType playerType(char playerSymbol)
+{
+    switch (playerSymbol)
     {
-        const auto windowName = "draughts";
-        const auto videoMode  = sf::VideoMode(600, 600);
-        const auto framerate  = 60;
-
-        auto window = std::make_unique<sf::RenderWindow>(videoMode, windowName);
-        window->setFramerateLimit(framerate);
-        return window;
+        case 'p': return PlayerType::human;
+        case 'c': return PlayerType::cpu;
     }
+    throw std::invalid_argument(std::string("Unrecognized player symbol: \"") + playerSymbol + "\"");
+}
 
-    Game game()
+struct PlayerFactory
+{
+    static std::shared_ptr<Player> player(PlayerType playerType)
     {
-        return Game({600.f, 600.f});
+        switch (playerType)
+        {
+            case PlayerType::cpu:   return std::make_shared<RandomCpuPlayer>();
+            case PlayerType::human: return std::make_shared<HumanPlayer>();
+        }
+        throw SwitchException("PlayerType", playerType);
     }
+};
+
+std::vector<std::pair<PieceColor, std::shared_ptr<Player>>> players(std::string_view gameType)
+{
+    return {
+        {PieceColor::White, PlayerFactory::player(playerType(gameType[0]))},
+        {PieceColor::Black, PlayerFactory::player(playerType(gameType[2]))}
+    };
+}
+
 }
 
 int System::run(const std::vector<std::string>& parameters)
@@ -46,12 +83,9 @@ int System::run(const std::vector<std::string>& parameters)
         return 2;
     }
 
-    const auto playerOne = gameType.starts_with("p") ? Player::human : Player::cpu;
-    const auto playerTwo = gameType.ends_with("p")   ? Player::human : Player::cpu;
-
-    auto cpuPlayer = RandomCpuPlayer();
-
+    auto players = ::players(gameType);
     auto game = ::game();
+
     for (auto window = ::window(); window->isOpen() && not game.isOver(); window->display())
     {
         for (auto event = sf::Event(); window->pollEvent(event);)
@@ -60,22 +94,23 @@ int System::run(const std::vector<std::string>& parameters)
             {
                 window->close();
             }
-            else if (event.type == sf::Event::MouseButtonReleased)
+
+            for (auto& [playerColor, player] : players)
             {
-                if ((playerOne == Player::human && game.currentPlayer() == PieceColor::White)
-                    || (playerTwo == Player::human && game.currentPlayer() == PieceColor::Black))
+                auto humanPlayer = std::dynamic_pointer_cast<HumanPlayer>(player);
+                if (humanPlayer && playerColor == game.currentPlayer())
                 {
-                    const auto mousPosition = sf::Vector2f(sf::Mouse::getPosition(*window));
-                    const auto undo = event.mouseButton.button == sf::Mouse::Right;
-                    game.update(mousPosition, undo);
+                    humanPlayer->onEvent(event);
                 }
             }
         }
 
-        if ((playerOne == Player::cpu && game.currentPlayer() == PieceColor::White)
-            || (playerTwo == Player::cpu && game.currentPlayer() == PieceColor::Black))
+        for (auto& [playerColor, player] : players)
         {
-            cpuPlayer.update(game);
+            if (playerColor == game.currentPlayer())
+            {
+                player->move(game);
+            }
         }
 
         window->clear();

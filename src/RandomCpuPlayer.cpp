@@ -29,7 +29,7 @@ RandomCpuPlayer::RandomCpuPlayer() : step_(0)
 {
 }
 
-void RandomCpuPlayer::update(Game& game)
+void RandomCpuPlayer::move(Game& game)
 {
     const auto now = std::chrono::high_resolution_clock::now();
     if (step_ == 0)

@@ -18,6 +18,7 @@ list(APPEND SRC_FILES
     BoardView.cpp
     Game.cpp
     GameState.cpp
+    HumanPlayer.cpp
     Move.cpp
     RandomCpuPlayer.cpp
     System.cpp

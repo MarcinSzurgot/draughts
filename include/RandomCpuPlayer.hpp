@@ -3,12 +3,14 @@
 #include <chrono>
 
 #include "Game.hpp"
+#include "Piece.hpp"
+#include "Player.hpp"
 
-struct RandomCpuPlayer
+struct RandomCpuPlayer : Player
 {
     RandomCpuPlayer();
 
-    void update(Game& game);
+    void move(Game& game) override;
 
 private:
     std::optional<Move> currentMove_;
