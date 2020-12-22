@@ -13,6 +13,7 @@ if (NOT sfml_POPULATED)
 endif ()
 
 list(APPEND SRC_FILES
+    ArgumentParser.cpp
     Board.cpp
     BoardBuilder.cpp
     BoardView.cpp
@@ -20,6 +21,7 @@ list(APPEND SRC_FILES
     GameState.cpp
     HumanPlayer.cpp
     Move.cpp
+    PlayerHandler.cpp
     RandomCpuPlayer.cpp
     System.cpp
 )

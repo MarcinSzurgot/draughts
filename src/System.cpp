@@ -5,15 +5,12 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
+#include "ArgumentParser.hpp"
 #include "Game.hpp"
-#include "HumanPlayer.hpp"
-#include "RandomCpuPlayer.hpp"
-#include "SwitchException.hpp"
+#include "PlayerHandler.hpp"
 
 namespace
 {
-
-enum PlayerType { cpu, human };
 
 std::unique_ptr<sf::RenderWindow> window()
 {
@@ -31,60 +28,19 @@ Game game()
     return Game({600.f, 600.f});
 }
 
-PlayerType playerType(char playerSymbol)
-{
-    switch (playerSymbol)
-    {
-        case 'p': return PlayerType::human;
-        case 'c': return PlayerType::cpu;
-    }
-    throw std::invalid_argument(std::string("Unrecognized player symbol: \"") + playerSymbol + "\"");
-}
-
-struct PlayerFactory
-{
-    static std::shared_ptr<Player> player(PlayerType playerType)
-    {
-        switch (playerType)
-        {
-            case PlayerType::cpu:   return std::make_shared<RandomCpuPlayer>();
-            case PlayerType::human: return std::make_shared<HumanPlayer>();
-        }
-        throw SwitchException("PlayerType", playerType);
-    }
-};
-
-std::vector<std::pair<PieceColor, std::shared_ptr<Player>>> players(std::string_view gameType)
-{
-    return {
-        {PieceColor::White, PlayerFactory::player(playerType(gameType[0]))},
-        {PieceColor::Black, PlayerFactory::player(playerType(gameType[2]))}
-    };
-}
-
 }
 
 int System::run(const std::vector<std::string>& parameters)
 {
-    if (size(parameters) != 2)
+    const auto argParser = ArgumentParser(parameters);
+    if (not argParser.success())
     {
-        std::cerr << "Not enough parameters.\n";
-        return 1;
+        return argParser.errorCode();
     }
 
-    const auto& gameType = parameters[1];
-
-    if (gameType != "pvp"
-        && gameType != "pvc"
-        && gameType != "cvp"
-        && gameType != "cvc")
-    {
-        std::cerr << "Invalid parameters.\n";
-        return 2;
-    }
-
-    auto players = ::players(gameType);
+    const auto players = argParser.players();
     auto game = ::game();
+    auto playerHandler = PlayerHandler(players.whitePlayerType, players.blackPlayerType, game);
 
     for (auto window = ::window(); window->isOpen() && not game.isOver(); window->display())
     {
@@ -95,23 +51,10 @@ int System::run(const std::vector<std::string>& parameters)
                 window->close();
             }
 
-            for (auto& [playerColor, player] : players)
-            {
-                auto humanPlayer = std::dynamic_pointer_cast<HumanPlayer>(player);
-                if (humanPlayer && playerColor == game.currentPlayer())
-                {
-                    humanPlayer->onEvent(event);
-                }
-            }
+            playerHandler.onEvent(event);
         }
 
-        for (auto& [playerColor, player] : players)
-        {
-            if (playerColor == game.currentPlayer())
-            {
-                player->move(game);
-            }
-        }
+        playerHandler.move();
 
         window->clear();
         window->draw(game.boardView());
