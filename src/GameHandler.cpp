@@ -1,4 +1,4 @@
-#include "PlayerHandler.hpp"
+#include "GameHandler.hpp"
 
 #include "HumanPlayer.hpp"
 #include "RandomCpuPlayer.hpp"
@@ -19,21 +19,23 @@ std::shared_ptr<Player> player(PlayerType playerType)
 
 }
 
-PlayerHandler::PlayerHandler(PlayerType whitePlayerType, PlayerType blackPlayerType, Game& game)
-: game_(game)
+GameHandler::GameHandler(PlayerType whitePlayerType,
+                         PlayerType blackPlayerType,
+                         sf::Vector2f gameWindowSize)
+: game_(gameWindowSize)
 , whitePlayer_(player(whitePlayerType))
 , blackPlayer_(player(blackPlayerType))
 {
 
 }
 
-void PlayerHandler::onEvent(sf::Event event)
+void GameHandler::onEvent(sf::Event event)
 {
     auto didPlayerEvent = [&](std::shared_ptr<Player> player, PieceColor color)
     {
         if (const auto& human = std::dynamic_pointer_cast<HumanPlayer>(player))
         {
-            if (game_.get().currentPlayer() == color)
+            if (game_.currentPlayer() == color)
             {
                 human->onEvent(event);
             }
@@ -44,16 +46,26 @@ void PlayerHandler::onEvent(sf::Event event)
     didPlayerEvent(blackPlayer_, PieceColor::Black);
 }
 
-void PlayerHandler::move()
+void GameHandler::move()
 {
     const auto& player = [&]{
-        switch (game_.get().currentPlayer())
+        switch (game_.currentPlayer())
         {
             case PieceColor::White: return whitePlayer_;
             case PieceColor::Black: return blackPlayer_;
         }
-        throw SwitchException("PieceColor", game_.get().currentPlayer());
+        throw SwitchException("PieceColor", game_.currentPlayer());
     } ();
 
     player->move(game_);
+}
+
+bool GameHandler::isOver() const
+{
+    return game_.isOver();
+}
+
+const sf::Drawable& GameHandler::drawable() const
+{
+    return game_.drawable();
 }

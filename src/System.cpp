@@ -6,8 +6,7 @@
 #include <SFML/Window/Event.hpp>
 
 #include "ArgumentParser.hpp"
-#include "Game.hpp"
-#include "PlayerHandler.hpp"
+#include "GameHandler.hpp"
 
 namespace
 {
@@ -23,11 +22,6 @@ std::unique_ptr<sf::RenderWindow> window()
     return window;
 }
 
-Game game()
-{
-    return Game({600.f, 600.f});
-}
-
 }
 
 int System::run(const std::vector<std::string>& parameters)
@@ -39,10 +33,13 @@ int System::run(const std::vector<std::string>& parameters)
     }
 
     const auto players = argParser.players();
-    auto game = ::game();
-    auto playerHandler = PlayerHandler(players.whitePlayerType, players.blackPlayerType, game);
+    auto gameHandler = GameHandler(
+        players.whitePlayerType,
+        players.blackPlayerType,
+        {600.f, 600.f}
+    );
 
-    for (auto window = ::window(); window->isOpen() && not game.isOver(); window->display())
+    for (auto window = ::window(); window->isOpen() && not gameHandler.isOver(); window->display())
     {
         for (auto event = sf::Event(); window->pollEvent(event);)
         {
@@ -51,13 +48,13 @@ int System::run(const std::vector<std::string>& parameters)
                 window->close();
             }
 
-            playerHandler.onEvent(event);
+            gameHandler.onEvent(event);
         }
 
-        playerHandler.move();
+        gameHandler.move();
 
         window->clear();
-        window->draw(game.boardView());
+        window->draw(gameHandler.drawable());
     }
     return 0;
 }

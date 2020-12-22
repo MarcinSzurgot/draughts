@@ -18,10 +18,10 @@ list(APPEND SRC_FILES
     BoardBuilder.cpp
     BoardView.cpp
     Game.cpp
+    GameHandler.cpp
     GameState.cpp
     HumanPlayer.cpp
     Move.cpp
-    PlayerHandler.cpp
     RandomCpuPlayer.cpp
     System.cpp
 )
