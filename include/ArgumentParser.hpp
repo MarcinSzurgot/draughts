@@ -1,14 +1,19 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include <optional>
 
-enum PlayerType { cpu, human };
+enum class PlayerType { human, random, minmax };
+
+struct PlayerConfig
+{
+    PlayerType type;
+    std::optional<int> minmaxDepth;
+};
 
 struct Players
 {
-    PlayerType whitePlayerType;
-    PlayerType blackPlayerType;
+    PlayerConfig whitePlayerConfig;
+    PlayerConfig blackPlayerConfig;
 };
 
 enum class ArgumentParserErrorCode : int
@@ -20,15 +25,15 @@ enum class ArgumentParserErrorCode : int
 
 struct ArgumentParser
 {
-    ArgumentParser(const std::vector<std::string>& args);
+    ArgumentParser(int argc, char** argv);
 
-    Players players() const;
+    std::optional<Players> players() const;
 
     bool success() const;
 
     int errorCode() const;
 
 private:
-    std::string gameType_;
+    std::optional<Players> players_;
     ArgumentParserErrorCode errorCode_;
 };

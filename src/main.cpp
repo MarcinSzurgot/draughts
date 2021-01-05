@@ -2,5 +2,5 @@
 
 int main(int argc, char** argv)
 {
-    return System().run({argv, argv + argc});
+    return System().run(argc, argv);
 }

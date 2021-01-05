@@ -24,9 +24,9 @@ std::unique_ptr<sf::RenderWindow> window()
 
 }
 
-int System::run(const std::vector<std::string>& parameters)
+int System::run(int argc, char** argv)
 {
-    const auto argParser = ArgumentParser(parameters);
+    const auto argParser = ArgumentParser(argc, argv);
     if (not argParser.success())
     {
         return argParser.errorCode();
@@ -34,8 +34,8 @@ int System::run(const std::vector<std::string>& parameters)
 
     const auto players = argParser.players();
     auto gameHandler = GameHandler(
-        players.whitePlayerType,
-        players.blackPlayerType,
+        players->whitePlayerConfig,
+        players->blackPlayerConfig,
         {600.f, 600.f}
     );
 

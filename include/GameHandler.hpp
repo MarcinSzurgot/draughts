@@ -11,8 +11,8 @@
 
 struct GameHandler
 {
-    GameHandler(PlayerType whitePlayerType,
-                PlayerType blackPlayerType,
+    GameHandler(PlayerConfig whitePlayerConfig,
+                PlayerConfig blackPlayerConfig,
                 sf::Vector2f gameWindowSize);
 
     void onEvent(sf::Event event);

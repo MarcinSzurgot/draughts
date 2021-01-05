@@ -7,24 +7,25 @@
 namespace
 {
 
-std::shared_ptr<Player> player(PlayerType playerType)
+std::shared_ptr<Player> player(PlayerConfig playerConfig)
 {
-    switch (playerType)
+    switch (playerConfig.type)
     {
-        case PlayerType::cpu:   return std::make_shared<RandomCpuPlayer>();
-        case PlayerType::human: return std::make_shared<HumanPlayer>();
+        case PlayerType::human:  return std::make_shared<HumanPlayer>();
+        case PlayerType::random: return std::make_shared<RandomCpuPlayer>();
+        case PlayerType::minmax: return {};
     }
-    throw SwitchException("PlayerType", playerType);
+    throw SwitchException("PlayerType", playerConfig.type);
 }
 
 }
 
-GameHandler::GameHandler(PlayerType whitePlayerType,
-                         PlayerType blackPlayerType,
+GameHandler::GameHandler(PlayerConfig whitePlayerConfig,
+                         PlayerConfig blackPlayerConfig,
                          sf::Vector2f gameWindowSize)
 : game_(gameWindowSize)
-, whitePlayer_(player(whitePlayerType))
-, blackPlayer_(player(blackPlayerType))
+, whitePlayer_(player(whitePlayerConfig))
+, blackPlayer_(player(blackPlayerConfig))
 {
 
 }
