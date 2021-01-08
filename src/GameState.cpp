@@ -45,6 +45,11 @@ const Board& GameState::board() const
     return board_;
 }
 
+std::vector<Move> GameState::vectorMoves() const
+{
+    return ::moves(*this);
+}
+
 std::span<const Move> GameState::moves() const
 {
     if (needsUpdate_)

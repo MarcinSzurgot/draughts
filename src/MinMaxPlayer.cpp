@@ -92,8 +92,7 @@ int minmax(GameState& state, int depth, bool maximizingPlayer)
 
     auto initialized = false;
     auto best = maximizingPlayer ? std::numeric_limits<int>::lowest() : std::numeric_limits<int>::max();
-    const auto spanMoves = state.moves();
-    const auto allMoves = std::vector<Move>(begin(spanMoves), end(spanMoves));
+    const auto allMoves = state.vectorMoves();
     for (const auto& position : state.board().size())
     {
         for (const auto& move : movesForPosition(allMoves, position))

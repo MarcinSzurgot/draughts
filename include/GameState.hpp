@@ -10,6 +10,8 @@ struct GameState
 
     const Board& board() const;
 
+    std::vector<Move> vectorMoves() const;
+
     std::span<const Move> moves() const;
 
     std::span<const Move> moves(sf::Vector2i position) const;
