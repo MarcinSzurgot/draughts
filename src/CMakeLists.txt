@@ -21,6 +21,7 @@ list(APPEND SRC_FILES
     GameHandler.cpp
     GameState.cpp
     HumanPlayer.cpp
+    MinMaxPlayer.cpp
     Move.cpp
     RandomCpuPlayer.cpp
     System.cpp

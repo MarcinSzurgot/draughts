@@ -50,6 +50,7 @@ std::span<const Move> GameState::moves() const
     if (needsUpdate_)
     {
         currentPlayerMoves_ = ::moves(*this);
+        needsUpdate_ = false;
     }
     return std::span(begin(currentPlayerMoves_), end(currentPlayerMoves_));
 }
@@ -82,6 +83,8 @@ Exchange GameState::move(const Move& move)
         board_[*move.jump] = Tile();
     }
 
+    needsUpdate_ = true;
+
     return exchange;
 }
 
@@ -94,6 +97,7 @@ void GameState::undo(const Exchange& exchange)
         board_[*jump] = exchange.jumpedPiece;
     }
     currentPlayer_ = toggled(currentPlayer_);
+    needsUpdate_ = true;
 }
 
 PieceColor GameState::currentPlayer() const

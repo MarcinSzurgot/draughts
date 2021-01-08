@@ -1,6 +1,7 @@
 #include "GameHandler.hpp"
 
 #include "HumanPlayer.hpp"
+#include "MinMaxPlayer.hpp"
 #include "RandomCpuPlayer.hpp"
 #include "SwitchException.hpp"
 
@@ -13,7 +14,7 @@ std::shared_ptr<Player> player(PlayerConfig playerConfig)
     {
         case PlayerType::human:  return std::make_shared<HumanPlayer>();
         case PlayerType::random: return std::make_shared<RandomCpuPlayer>();
-        case PlayerType::minmax: return {};
+        case PlayerType::minmax: return std::make_shared<MinMaxPlayer>(*playerConfig.minmaxDepth);
     }
     throw SwitchException("PlayerType", playerConfig.type);
 }
