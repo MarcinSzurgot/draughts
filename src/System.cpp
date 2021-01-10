@@ -1,5 +1,7 @@
 #include "System.hpp"
 
+#include <chrono>
+#include <iostream>
 #include <memory>
 
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -26,6 +28,8 @@ std::unique_ptr<sf::RenderWindow> window()
 
 int System::run(int argc, char** argv)
 {
+    const auto startTime = std::chrono::high_resolution_clock::now();
+
     const auto argParser = ArgumentParser(argc, argv);
     if (not argParser.success())
     {
@@ -56,5 +60,9 @@ int System::run(int argc, char** argv)
         window->clear();
         window->draw(gameHandler.drawable());
     }
+
+    const auto endTime = std::chrono::high_resolution_clock::now();
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+    std::cout << "Elapsed time: " << elapsed.count() << "ms.\n";
     return 0;
 }

@@ -60,16 +60,6 @@ private:
     const Board& board_;
 };
 
-std::span<const Move> movesForPosition(const std::vector<Move>& moves, sf::Vector2i position)
-{
-    const auto pieceOnPosition = [position](const Move& move){
-        return move.from == position;
-    };
-    const auto first = std::find_if(begin(moves), end(moves), pieceOnPosition);
-    const auto last  = std::find_if_not(first, end(moves), pieceOnPosition);
-    return {first, last};
-}
-
 int evaluate(const GameState& state)
 {
     return std::accumulate(
@@ -83,7 +73,7 @@ int evaluate(const GameState& state)
     });
 }
 
-int minmax(GameState& state, int depth, bool maximizingPlayer)
+int minmax(GameState& state, int depth, int previousEval, bool maximizingPlayer)
 {
     if (depth == 0)
     {
@@ -92,17 +82,17 @@ int minmax(GameState& state, int depth, bool maximizingPlayer)
 
     auto initialized = false;
     auto best = maximizingPlayer ? std::numeric_limits<int>::lowest() : std::numeric_limits<int>::max();
-    const auto allMoves = state.vectorMoves();
-    for (const auto& position : state.board().size())
+    for (const auto& move : state.vectorMoves())
     {
-        for (const auto& move : movesForPosition(allMoves, position))
+        if (maximizingPlayer ? previousEval < best : previousEval > best)
         {
-            const auto exchange = state.move(move);
-            const auto eval = minmax(state, depth - 1, !maximizingPlayer);
-            best = maximizingPlayer ? std::max(best, eval) : std::min(best, eval);
-            initialized = true;
-            state.undo(exchange);
+            break;
         }
+        const auto exchange = state.move(move);
+        const auto eval = minmax(state, depth - 1, best, !maximizingPlayer);
+        best = maximizingPlayer ? std::max(best, eval) : std::min(best, eval);
+        initialized = true;
+        state.undo(exchange);
     }
 
     if (not initialized)
@@ -118,21 +108,16 @@ std::optional<Move> minmax(GameState state, int depth)
     const auto board = state.board();
     auto bestEval = std::numeric_limits<int>::lowest();
     auto bestMove = std::optional<Move>();
-    const auto spanMoves = state.moves();
-    const auto allMoves = std::vector<Move>(begin(spanMoves), end(spanMoves));
-    for (const auto& [position, piece] : PieceIterator(state.board()))
+    for (const auto& move : state.vectorMoves())
     {
-        for (const auto& move : movesForPosition(allMoves, position))
+        const auto exchange = state.move(move);
+        const auto eval = minmax(state, depth, bestEval, false);
+        if (eval > bestEval)
         {
-            const auto exchange = state.move(move);
-            const auto eval = minmax(state, depth, false);
-            if (eval > bestEval)
-            {
-                bestEval = eval;
-                bestMove = move;
-            }
-            state.undo(exchange);
+            bestEval = eval;
+            bestMove = move;
         }
+        state.undo(exchange);
     }
     return bestMove;
 }

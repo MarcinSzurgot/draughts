@@ -70,17 +70,3 @@ MatrixIterator<Integer> end(sf::Vector2<Integer> size)
 }
 
 }
-
-template<typename Container, typename Comparator>
-auto find(Container&& container, Comparator&& comparator)
-{
-    const auto first = begin(container);
-    const auto last  = end(container);
-    const auto found = std::find_if(first, last, std::forward<Comparator>(comparator));
-
-    if (found != last)
-    {
-        return std::make_optional(*found);
-    }
-    return std::optional<typename decltype(found)::value_type>();
-}

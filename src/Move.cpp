@@ -2,9 +2,63 @@
 
 #include "GameState.hpp"
 #include "SwitchException.hpp"
+#include "Utility.hpp"
 
 namespace
 {
+
+struct PieceIterator
+{
+    PieceIterator(const Board& board, PieceColor currentPlayer)
+    : current_(board.size()),
+      last_(board.size(), board.size()),
+      board_(board),
+      currentPlayer_(currentPlayer)
+    {
+        findPiece();
+    }
+
+    friend PieceIterator& begin(PieceIterator& iterator)
+    {
+        return iterator;
+    }
+
+    friend PieceIterator& end(PieceIterator& iterator)
+    {
+        return iterator;
+    }
+
+    friend PieceIterator& operator++(PieceIterator& iterator)
+    {
+        ++iterator.current_;
+        iterator.findPiece();
+        return iterator;
+    }
+
+    friend std::pair<sf::Vector2i, const Piece&> operator*(const PieceIterator& iterator)
+    {
+        return {*iterator.current_, *iterator.board_[*iterator.current_]};
+    }
+
+    friend bool operator!=(const PieceIterator& lhs, const PieceIterator& rhs)
+    {
+        return lhs.current_ != rhs.last_;
+    }
+
+private:
+    void findPiece()
+    {
+        for (; current_ != last_ 
+               && (not board_[*current_] 
+                   || board_[*current_]->pieceColor != currentPlayer_); 
+               ++current_);
+    }
+
+    MatrixIterator<int> current_;
+    MatrixIterator<int> last_;
+    const Board& board_;
+    PieceColor currentPlayer_;
+};
 
 bool contains(sf::Vector2i size, sf::Vector2i position)
 {
@@ -58,40 +112,34 @@ int distance(const Piece& piece)
 template<typename UnaryOperator>
 void getMoves (const GameState& state, UnaryOperator&& unaryOperator)
 {
-    for (auto position = sf::Vector2i(); position.y < state.board().size().y; ++position.y)
+    for (const auto& [position, piece] : PieceIterator(state.board(), state.currentPlayer()))
     {
-        for (position.x = 0; position.x < state.board().size().x; ++position.x)
+        const auto distance = ::distance(piece);
+        const auto& directions = ::directions(piece);
+        for (const auto& direction : directions)
         {
-            if (const auto& piece = state.board()[position]; piece && piece->pieceColor == state.currentPlayer())
+            auto lastJump = std::optional<sf::Vector2i>();
+            for (auto d = 1; (d - lastJump.has_value()) <= distance; ++d)
             {
-                const auto distance = ::distance(*piece);
-                const auto& directions = ::directions(*piece);
-                for (const auto& direction : directions)
+                const auto destination = position + direction * d;
+                if (not contains(state.board().size(), destination))
                 {
-                    auto lastJump = std::optional<sf::Vector2i>();
-                    for (auto d = 1; (d - lastJump.has_value()) <= distance; ++d)
+                    break;
+                }
+                else if (const auto otherPawn = state.board()[destination])
+                {
+                    if (lastJump || otherPawn->pieceColor == piece.pieceColor)
                     {
-                        const auto destination = position + direction * d;
-                        if (not contains(state.board().size(), destination))
-                        {
-                            break;
-                        }
-                        else if (const auto otherPawn = state.board()[destination])
-                        {
-                            if (lastJump || otherPawn->pieceColor == piece->pieceColor)
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                lastJump = destination;
-                            }
-                        }
-                        else
-                        {
-                            unaryOperator(Move{position, destination, lastJump});
-                        }
+                        break;
                     }
+                    else
+                    {
+                        lastJump = destination;
+                    }
+                }
+                else
+                {
+                    unaryOperator(Move{position, destination, lastJump});
                 }
             }
         }
