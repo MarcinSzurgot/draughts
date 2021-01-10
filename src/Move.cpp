@@ -66,7 +66,7 @@ bool contains(sf::Vector2i size, sf::Vector2i position)
     return x >= 0 && x < size.x && y >= 0 && y < size.y;
 }
 
-std::vector<sf::Vector2i> directions(const Piece& piece)
+const std::vector<sf::Vector2i>& directions(const Piece& piece)
 {
     static const auto white = std::vector{
         sf::Vector2i{-1, -1},
@@ -115,8 +115,7 @@ void getMoves (const GameState& state, UnaryOperator&& unaryOperator)
     for (const auto& [position, piece] : PieceIterator(state.board(), state.currentPlayer()))
     {
         const auto distance = ::distance(piece);
-        const auto& directions = ::directions(piece);
-        for (const auto& direction : directions)
+        for (const auto& direction : directions(piece))
         {
             auto lastJump = std::optional<sf::Vector2i>();
             for (auto d = 1; (d - lastJump.has_value()) <= distance; ++d)

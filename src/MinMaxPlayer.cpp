@@ -105,7 +105,6 @@ int minmax(GameState& state, int depth, int previousEval, bool maximizingPlayer)
 
 std::optional<Move> minmax(GameState state, int depth)
 {
-    const auto board = state.board();
     auto bestEval = std::numeric_limits<int>::lowest();
     auto bestMove = std::optional<Move>();
     for (const auto& move : state.vectorMoves())
@@ -146,7 +145,7 @@ void MinMaxPlayer::move(Game& game)
     else if (step_ == 1 || step_ == 2)
     {
         const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - timeDelay_);
-        if (elapsed >= std::chrono::milliseconds(100))
+        if (elapsed >= std::chrono::milliseconds(1))
         {
             game.update(step_ == 1 ? currentMove_->from : currentMove_->to);
             timeDelay_ = now;
